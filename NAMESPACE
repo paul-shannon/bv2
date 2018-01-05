@@ -1,0 +1,29 @@
+exportClasses(BrowserViz2Class)
+
+exportMethods (
+   openBrowser,
+   ready,
+   getBrowserInfo,
+   send,
+   browserResponseReady,
+   getBrowserResponse,
+   closeWebSocket,
+   port,
+   roundTripTest,
+   getBrowserWindowTitle,
+   setBrowserWindowTitle,
+   getBrowserWindowSize
+   )
+
+export(
+   addRMessageHandler,
+   BrowserViz2,
+   toJSON
+   )
+
+importClassesFrom(methods, character, integer)
+importFrom(methods, new)
+
+import(BiocGenerics)
+import(httpuv)
+importFrom(jsonlite, fromJSON, toJSON)
