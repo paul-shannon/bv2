@@ -19,6 +19,7 @@ testConstructor <- function()
 {
    print("--- testConstructor")
    app <- BrowserViz2(PORT_RANGE, quiet=FALSE);
+   openBrowser(app)
    checkTrue(ready(app))
    checkTrue(port(app) %in% PORT_RANGE)
    closeWebSocket(app)
@@ -29,7 +30,8 @@ testConstructor <- function()
 testGetBrowserInfo <- function()
 {
    print("--- testGetBrowserInfo")
-   app <- BrowserViz(PORT_RANGE, quiet=FALSE);
+   app <- BrowserViz2(PORT_RANGE, quiet=FALSE);
+   openBrowser(app)
    checkTrue(ready(app))
    userAgent <- getBrowserInfo(app)
    checkEquals(typeof(userAgent), "character")
@@ -45,7 +47,8 @@ testMultipleOpenCloseOnSamePort <- function()
    max <- 3
 
    for(i in 1:max){
-     app <- BrowserViz(PORT_RANGE[1]);
+     app <- BrowserViz2(PORT_RANGE[1]);
+     openBrowser(app)
      checkTrue(ready(app))
      #printf("app instance #%d ready on port %d", i, port(app))
      checkEquals(port(app), PORT_RANGE[1])
@@ -60,7 +63,8 @@ testMultipleOpenCloseOnSamePort <- function()
 testWindowTitle <- function()
 {
    print("--- testWindowTitle")
-   app <- BrowserViz(PORT_RANGE)
+   app <- BrowserViz2(PORT_RANGE)
+   openBrowser(app)
    checkTrue(ready(app))
    checkEquals(getBrowserWindowTitle(app), "BrowserViz")
    setBrowserWindowTitle(app, "new title");
@@ -81,7 +85,8 @@ testWindowTitle <- function()
 testGetWindowSize <- function()
 {
    print("--- testGetWindowSize")
-   app <- BrowserViz(PORT_RANGE)
+   app <- BrowserViz2(PORT_RANGE)
+   openBrowser(app)
    checkTrue(ready(app))
    x <- getBrowserWindowSize(app)
    checkEquals(sort(names(x)), c("height", "width"))
@@ -96,11 +101,12 @@ testRunOutOfPorts <- function()
 
    max <- 3
    portRange <- PORT_RANGE[1]:(PORT_RANGE[1]+1)
-   apps <- lapply(rep("BrowserVizClass", max), new)
+   apps <- lapply(rep("BrowserViz2Class", max), new)
 
    boundToFail <- function(max, portRange){
       for(i in 1:max){
-         app <- BrowserViz(portRange);
+         app <- BrowserViz2(portRange);
+         openBrowser(app)
          apps[[i]] <- app
          checkTrue(ready(app))
          setBrowserWindowTitle(app, sprintf("app %d", i))
@@ -116,7 +122,7 @@ testRunOutOfPorts <- function()
      if(length(port(apps[[i]])) > 0){
         app <- apps[[i]]
         if(ready(app)) {
-           #printf("closing app instance on port %d", port(app))
+           printf("closing app instance on port %d", port(app))
            checkEquals(getBrowserWindowTitle(app), sprintf("app %d", i))
            closeWebSocket(app)
            checkTrue(!ready(app))
@@ -129,7 +135,9 @@ testRunOutOfPorts <- function()
 testRoundTrips <- function(quiet=TRUE)
 {
    print("--- test_roundTrips")
-   app <- BrowserViz(PORT_RANGE, quiet=quiet)
+   quiet <- TRUE
+   app <- BrowserViz2(PORT_RANGE, quiet=quiet)
+   openBrowser(app)
    checkTrue(ready(app))
 
    data <- 99

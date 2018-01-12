@@ -103,7 +103,6 @@ BrowserViz2 = function(portRange, host="localhost", title="BrowserViz", quiet=FA
      print(result)
      }
 
-  browser()
   actualPort <- result$port
   wsID <- result$wsID
 
@@ -121,7 +120,6 @@ setMethod('openBrowser', 'BrowserViz2Class',
 
   function (obj) {
 
-    browser()
     if(!obj@quiet){
        message(sprintf("summoning default browser to get %s", obj@uri))
        }
