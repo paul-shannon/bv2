@@ -76,12 +76,6 @@ setGeneric('setBrowserWindowTitle',   signature='obj', function(obj, newTitle, p
 setGeneric('roundTripTest',           signature='obj', function (obj, ...) standardGeneric('roundTripTest'))
 setGeneric('getBrowserWindowSize',    signature='obj', function(obj) standardGeneric('getBrowserWindowSize'))
 #----------------------------------------------------------------------------------------------------
-#setupMessageHandlers <- function()
-#{
-#   addRMessageHandler("handleResponse", "handleResponse")
-#
-#} # setupMessageHandlers
-#----------------------------------------------------------------------------------------------------
 BrowserViz2 = function(portRange, host="localhost", title="BrowserViz", quiet=FALSE, browserFile=NA,
                        httpQueryProcessingFunction=NULL)
 {
@@ -126,7 +120,7 @@ setMethod('openBrowser', 'BrowserViz2Class',
     if(!obj@quiet)
       message(sprintf("starting daemonized server on port %s", obj@port))
 
-    addRMessageHandler(obj, "handleResponse", "handleResponse")
+    addMessageHandler(obj, "handleResponse", "handleResponse")
 
     totalWait <- 0.0
     maxWaitPermitted <- 10000.0
@@ -340,10 +334,9 @@ setMethod('getBrowserResponse', 'BrowserViz2Class',
 setMethod('addMessageHandler', 'BrowserViz2Class',
 
   function (obj, key, functionName){
-     obj@dispatchMap[[key]] <- functionName
+     dispatchMap[[key]] <- functionName
      })
 
-} # addRMessageHandler
 #---------------------------------------------------------------------------------------------------
 dispatchMessage <- function(ws, msg, quiet)
 {
