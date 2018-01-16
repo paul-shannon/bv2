@@ -5,6 +5,7 @@ exportMethods (
    ready,
    getBrowserInfo,
    send,
+   addMessageHandler,
    browserResponseReady,
    getBrowserResponse,
    closeWebSocket,
@@ -16,7 +17,6 @@ exportMethods (
    )
 
 export(
-   addRMessageHandler,
    BrowserViz2,
    toJSON
    )

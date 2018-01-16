@@ -62,6 +62,7 @@ setGeneric('port',                    signature='obj', function(obj) standardGen
 setGeneric('ready',                   signature='obj', function(obj) standardGeneric('ready'))
 setGeneric('getBrowserInfo',          signature='obj', function(obj) standardGeneric('getBrowserInfo'))
 setGeneric('send',                    signature='obj', function(obj, msg) standardGeneric('send'))
+setGeneric('addMessageHandler',       signature='obj', function(obj, key, functionName) standardGeneric('addMessageHandler'))
 setGeneric('browserResponseReady',    signature='obj', function(obj) standardGeneric('browserResponseReady'))
 setGeneric('getBrowserResponse',      signature='obj', function(obj) standardGeneric('getBrowserResponse'))
 setGeneric('closeWebSocket',          signature='obj', function(obj) standardGeneric('closeWebSocket'))
@@ -71,11 +72,11 @@ setGeneric('setBrowserWindowTitle',   signature='obj', function(obj, newTitle, p
 setGeneric('roundTripTest',           signature='obj', function (obj, ...) standardGeneric('roundTripTest'))
 setGeneric('getBrowserWindowSize',    signature='obj', function(obj) standardGeneric('getBrowserWindowSize'))
 #----------------------------------------------------------------------------------------------------
-setupMessageHandlers <- function()
-{
-   addRMessageHandler("handleResponse", "handleResponse")
-
-} # setupMessageHandlers
+#setupMessageHandlers <- function()
+#{
+#   addRMessageHandler("handleResponse", "handleResponse")
+#
+#} # setupMessageHandlers
 #----------------------------------------------------------------------------------------------------
 BrowserViz2 = function(portRange, host="localhost", title="BrowserViz", quiet=FALSE, browserFile=NA,
                        httpQueryProcessingFunction=NULL)
@@ -121,7 +122,7 @@ setMethod('openBrowser', 'BrowserViz2Class',
     if(!obj@quiet)
       message(sprintf("starting daemonized server on port %s", obj@port))
 
-    setupMessageHandlers()
+    addRMessageHandler(obj, "handleResponse", "handleResponse")
 
     totalWait <- 0.0
     maxWaitPermitted <- 10000.0
@@ -333,9 +334,11 @@ setMethod('getBrowserResponse', 'BrowserViz2Class',
 
 } # .setupWebSocketHandlers
 #--------------------------------------------------------------------------------
-addRMessageHandler <- function(key, functionName)
-{
-   dispatchMap[[key]] <- functionName
+setMethod('addMessageHandler', 'BrowserViz2Class',
+
+  function (obj, key, functionName){
+     obj@dispatchMap[[key]] <- functionName
+     })
 
 } # addRMessageHandler
 #---------------------------------------------------------------------------------------------------
