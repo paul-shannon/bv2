@@ -1,8 +1,5 @@
-.getBrowser <- function()
-{
-   getOption("browser")
-}
 #----------------------------------------------------------------------------------------------------
+.getBrowser <- function() {getOption("browser")}
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
 BrowserViz.state <- new.env(parent=emptyenv())
@@ -18,10 +15,9 @@ toJSON <- function(..., auto_unbox = TRUE)
 #----------------------------------------------------------------------------------------------------
 # a default html + javascript file, an example, shows how to setup the websocket, get web page
 # dimensions, set and get the browser's window  title
-
 browserVizBrowserFile <- system.file(package="BrowserViz", "scripts", "viz.html")
 
-
+#----------------------------------------------------------------------------------------------------
 # this maps from incoming json commands to function calls
 dispatchMap <- new.env(parent=emptyenv())
 
@@ -54,7 +50,6 @@ sleepTime <- 1
                                                port="numeric",
                                                wsID="character",
                                                websocketConnection="environment",
-                                               status="environment",
                                                browserFile="character",
                                                quiet="logical"),
                          prototype = prototype (uri="http://localhost", 9000)
@@ -224,7 +219,6 @@ setMethod('closeWebSocket', 'BrowserViz2Class',
 
 #----------------------------------------------------------------------------------------------------
 # test initial variable setup, then send an actual message, and await the reply
-
 setMethod('ready', 'BrowserViz2Class',
 
   function (obj) {
