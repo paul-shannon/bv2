@@ -1,7 +1,7 @@
 Package: bv2
 Type: Package
 Title: bv2: interactive R/browser graphics using websockets and JSON, version 2
-Version: 2.0.13
+Version: 2.0.14
 Date: 2018-01-16
 Author: Paul Shannon
 Maintainer: Paul Shannon <pshannon@systemsbiology.org>

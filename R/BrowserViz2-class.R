@@ -18,7 +18,11 @@ toJSON <- function(..., auto_unbox = TRUE)
 browserVizBrowserFile <- system.file(package="BrowserViz", "scripts", "viz.html")
 
 #----------------------------------------------------------------------------------------------------
-# this maps from incoming json commands to function calls
+# this maps from incoming json commands to function calls.  it is file-global rather than
+# an object slot because it is used by the function "dispatchMessage" which is called
+# from -within- a function we pass to, and which is executed by, httpuv:
+#        ws$onMessage(function(binary, rawMessage) {...}
+# where "onMessage" means "this is the function to call when an incoming message is received"
 dispatchMap <- new.env(parent=emptyenv())
 
 # status is global variable at file scope, invisible outside the package.
@@ -293,8 +297,7 @@ setMethod('getBrowserResponse', 'BrowserViz2Class',
            body <- queryProcessorFunction(qs)
          else
            body <- "no query processor registered"
-         return(list(status=200L, headers = list('Content-Type' = 'text/html'),
-                     body=body))
+         return(list(status=200L, headers = list('Content-Type' = 'text/html'), body=body))
          } # the request had a query string
       wsUrl = paste(sep='', '"', "ws://",
                    ifelse(is.null(req$HTTP_HOST), req$SERVER_NAME, req$HTTP_HOST),
