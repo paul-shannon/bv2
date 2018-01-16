@@ -1,7 +1,8 @@
 library(RUnit)
 library(bv2)
 #--------------------------------------------------------------------------------
-PORT_RANGE = 7300:7320
+PORT_RANGE <- 7300:7320
+QUIET <- TRUE
 #--------------------------------------------------------------------------------
 runTests <- function()
 {
@@ -18,11 +19,16 @@ runTests <- function()
 testConstructor <- function()
 {
    print("--- testConstructor")
-   app <- BrowserViz2(PORT_RANGE, quiet=FALSE);
+
+   app <- BrowserViz2(PORT_RANGE, quiet=QUIET);
+   checkTrue(!ready(app))
+
    openBrowser(app)
    checkTrue(ready(app))
    checkTrue(port(app) %in% PORT_RANGE)
+
    closeWebSocket(app)
+
    checkTrue(!ready(app))
 
 } # testConstructor
@@ -30,7 +36,7 @@ testConstructor <- function()
 testGetBrowserInfo <- function()
 {
    print("--- testGetBrowserInfo")
-   app <- BrowserViz2(PORT_RANGE, quiet=FALSE);
+   app <- BrowserViz2(PORT_RANGE, quiet=QUIET);
    openBrowser(app)
    checkTrue(ready(app))
    userAgent <- getBrowserInfo(app)
@@ -132,11 +138,11 @@ testRunOutOfPorts <- function()
 
 } # testRunOutOfPorts
 #--------------------------------------------------------------------------------
-testRoundTrips <- function(quiet=TRUE)
+testRoundTrips <- function(quiet=QUIET)
 {
    print("--- test_roundTrips")
    quiet <- TRUE
-   app <- BrowserViz2(PORT_RANGE, quiet=quiet)
+   app <- BrowserViz2(PORT_RANGE, quiet=QUIET)
    openBrowser(app)
    checkTrue(ready(app))
 

@@ -1,11 +1,6 @@
 .getBrowser <- function()
 {
-   # if(.Platform$OS.type == "windows")
-   #     stop("BrowserViz not (yet) supported on Windows.")
-   # if(nchar(Sys.getenv("BROWSERVIZ_BROWSER")))
-   #     Sys.getenv("BROWSERVIZ_BROWSER")
-   # else
-        getOption("browser")
+   getOption("browser")
 }
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
@@ -32,11 +27,12 @@ dispatchMap <- new.env(parent=emptyenv())
 
 # status is global variable at file scope, invisible outside the package.
 # it keeps track of web sockect connection state, and -- crucially --
-# holds the result variable.  this solves the latency problem: when we make
+# holds the result variable returned by the browser.
+# this solves the latency problem: when we make
 # a request to the code running in the browser, the browser later (though
 # often very quickly) sends a JSON message back to R.  If we are, for instance,
 # asking for the current browser window title (see 'getBrowserWindowTitle' below), that
-# result is sent to the  call back we have registered, "handleResponse")
+# result is sent to the callback we have registered, "handleResponse")
 # to make this seem like a synchronous call, the caller sits in a tight sleep loop,
 # waiting until status$result is no longer NULL.  getBrowserWindowTitle will then
 # parse that JSON response into an R variable.
@@ -92,7 +88,7 @@ BrowserViz2 = function(portRange, host="localhost", title="BrowserViz", quiet=FA
   if(is.na(browserFile))
      browserFile <- browserVizBrowserFile
 
-  printf("browserFile: %s", browserFile)
+  if(!quiet) printf("browserFile: %s", browserFile)
   BrowserViz.state[["httpQueryProcessingFunction"]] <- httpQueryProcessingFunction
 
   stopifnot(file.exists(browserFile))
@@ -127,111 +123,33 @@ setMethod('openBrowser', 'BrowserViz2Class',
     wsCon <- .setupWebSocketHandlers(obj@websocketConnection, obj@browserFile, obj@quiet)
     obj@websocketConnection$wsID <- obj@wsID
 
-
-   if(!obj@quiet)
-     message(sprintf("starting daemonized server on port %s", obj@port))
-
-   setupMessageHandlers()
-
-   totalWait <- 0.0
-   maxWaitPermitted <- 10000.0
-   sleepTime <- 2
-
-   printf("openBrowser about to browse to %s", obj@uri)
-
-   browseURL(obj@uri, browser=.getBrowser())
-
-  while (is.null(obj@websocketConnection$ws)){   # becomes non-null when handshake is established
-    totalWait <- totalWait + sleepTime
-    stopifnot(totalWait < maxWaitPermitted)
     if(!obj@quiet)
-       message(sprintf ("BrowserViz websocket not ready, waiting %6.2f seconds", sleepTime));
-    Sys.sleep(sleepTime)
-    }
+      message(sprintf("starting daemonized server on port %s", obj@port))
 
-  if(!obj@quiet){
-     message(sprintf("BrowserViz websocket ready after %6.2f seconds", totalWait));
-     message(sprintf("about to return BrowserViz object"));
-     }
-     }) # start
+    setupMessageHandlers()
 
-#----------------------------------------------------------------------------------------------------
-# constructor: asks your browser to display browserFile, which is presented
-# by the minimal http server offered by httpuv, after which websocket messages are
-# exchanged.  the default browserFile, viz.html, does not do much, but is copied and
-# extended by BrowserViz subclassing applcations
-# the optional sixth argument, httpQueryProcessingFunction, provides subclasses with the
-# opportunity to execute code on the http server created here.  one case of this is
-# the BrowserTable class, which uses http in an ajax-ish way to pass pages of a possibly
-# very large data.frame to the browser for incremental display.
-#
-oldctor.BrowserViz = function(portRange, host="localhost", title="BrowserViz", quiet=FALSE, browserFile=NA,
-                      httpQueryProcessingFunction=NULL)
-{
-  if(is.na(browserFile))
-     browserFile <- browserVizBrowserFile
+    totalWait <- 0.0
+    maxWaitPermitted <- 10000.0
 
-  wsCon <- new.env(parent=emptyenv())
+    if(!obj@quiet) printf("openBrowser about to browse to %s", obj@uri)
 
-  result <- .startDaemonizedServerOnFirstAvailableLocalHostPort(portRange, wsCon)
-  actualPort <- result$port
+    browseURL(obj@uri, browser=.getBrowser())
 
-  if(is.null(actualPort))
-    stop(sprintf("no available ports in range %d:%d", min(portRange), max(portRange)))
+    while (is.null(obj@websocketConnection$ws)){   # becomes non-null when handshake is established
+      totalWait <- totalWait + sleepTime
+      stopifnot(totalWait < maxWaitPermitted)
+      if(!obj@quiet)
+         message(sprintf ("BrowserViz websocket not ready, waiting %6.2f seconds", sleepTime));
+      Sys.sleep(sleepTime)
+      }
 
+    if(!obj@quiet){
+      message(sprintf("BrowserViz websocket ready after %6.2f seconds", totalWait));
+      message(sprintf("about to return BrowserViz object"));
+      }
 
-  uri = sprintf("http://%s:%s", host, actualPort)
+    }) # openBrowser
 
-  if(!quiet){
-     message(sprintf("BrowserViz constructor starting with html file '%s'", browserFile))
-     message(sprintf(" html file exists? %s", file.exists(browserFile)))
-     }
-
-  stopifnot(file.exists(browserFile))
-
-  if(!quiet){
-     message(sprintf("summoning default browser to get %s", uri))
-     }
-
-  browseURL(uri, browser=.getBrowser())
-
-  wsCon <- .setupWebSocketHandlers(wsCon, browserFile, quiet)
-
-  wsCon$wsID <- result$wsID
-
-  if(!quiet)
-     message(sprintf("starting daemonized server on port %s", actualPort))
-
-  setupMessageHandlers()
-
-  obj <- .BrowserViz(uri=uri, websocketConnection=wsCon, port=actualPort, quiet=quiet)
-
-  BrowserViz.state[["httpQueryProcessingFunction"]] <- httpQueryProcessingFunction
-
-  #printf("sleeping 2 seconds for browser/httpuv handshake")
-  #Sys.sleep(2);  # wait for the browser/httpuv handshake to complete
-  #printf("sleep complete")
-
-  totalWait <- 0.0
-  maxWaitPermitted <- 10000.0
-  sleepTime <- 2
-
-  while (is.null(wsCon$ws)){   # becomes non-null when handshake is established
-    totalWait <- totalWait + sleepTime
-    stopifnot(totalWait < maxWaitPermitted)
-    if(!obj@quiet)
-       message(sprintf ("BrowserViz websocket not ready, waiting %6.2f seconds", sleepTime));
-    Sys.sleep(sleepTime)
-    }
-
-  if(!obj@quiet){
-     message(sprintf("BrowserViz websocket ready after %6.2f seconds", totalWait));
-     message(sprintf("about to return BrowserViz object"));
-     }
-
-  obj
-
-} # oldctor.BrowserViz: constructor
 #----------------------------------------------------------------------------------------------------
 .validWebSocketID <- function(candidate)
 {
@@ -315,6 +233,9 @@ setMethod('ready', 'BrowserViz2Class',
      sleepInterval <- 0.1
 
      if(!is.environment(obj@websocketConnection))
+        return(FALSE)
+
+     if(length(ls(obj@websocketConnection)) == 0)
         return(FALSE)
 
      if(!obj@websocketConnection$open)
@@ -459,12 +380,8 @@ setMethod('send', 'BrowserViz2Class',
 
     function(obj, msg) {
       status$result <- NULL
-      #printf("bv.send, nchar(str(msg)): %d", nchar(str(msg)));
-      #printf("bv.send, nchar(msg$payload): %d", nchar(msg$payload))
       msg.json <- toJSON(msg)
-      #printf("bv.send, nchar(msg.json): %d", nchar(str(msg.json)))
       obj@websocketConnection$ws$send(toJSON(msg))
-      #printf("obj@websocketConnection$ws$send(toJSON(msg)) complete");
       })
 
 #--------------------------------------------------------------------------------
@@ -528,8 +445,6 @@ setMethod('getBrowserWindowSize', 'BrowserViz2Class',
 #----------------------------------------------------------------------------------------------------
 handleResponse <- function(ws, msg)
 {
-   printf("--- entering BrowserViz-class.R::handleResponse")
-
    if(msg$status == "success")
       status$result <- msg$payload
    else{
