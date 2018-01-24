@@ -15,7 +15,8 @@ toJSON <- function(..., auto_unbox = TRUE)
 #----------------------------------------------------------------------------------------------------
 # a default html + javascript file, an example, shows how to setup the websocket, get web page
 # dimensions, set and get the browser's window  title
-browserVizBrowserFile <- system.file(package="BrowserViz", "scripts", "viz.html")
+#browserVizBrowserFile <- system.file(package="BrowserViz", "scripts", "viz.html")
+browserVizBrowserFile <- system.file(package="bv2", "browserCode", "dist", "browservizdemo.html")
 
 #----------------------------------------------------------------------------------------------------
 # this maps from incoming json commands to function calls.  it is file-global rather than

@@ -30,3 +30,5 @@ vignettes/*.pdf
 *.knit.md
 
 .DS_Store
+
+node_modules/
